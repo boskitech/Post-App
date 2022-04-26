@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { nanoid } from "@reduxjs/toolkit"
-import { postAdded } from "./postSlice"
+import { postAdded, deletePost } from "./postSlice"
 
 
 const Posts = () => {
@@ -71,7 +71,7 @@ const Posts = () => {
       </div>
       <div style={{borderTop:'1px solid #cccccc', padding:'20px auto', height:'330px', overflow: 'auto'}} className="display">
           {posts.map(post => (
-            <div style={{
+            <div  key={post.id} style={{
               width:'420px',
               margin:'10px auto',
               height:'auto',
@@ -82,7 +82,11 @@ const Posts = () => {
               color: '#333333'
             }}>
               
-              <span style={{fontSize:'25px'}}>{post.title}</span>
+              <span style={{fontSize:'25px'}}>{post.title}
+                <span onClick={() => dispatch(deletePost(post.id))} style={{fontSize:'20px', cursor:'pointer', float: 'right', color:'red'}}>
+                  <b>X</b>
+                </span>
+              </span>
               <br/>
               <p style={{fontSize:'15px', marginTop:'7px'}}>{post.content}</p>
   
