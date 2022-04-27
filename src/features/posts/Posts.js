@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { nanoid } from "@reduxjs/toolkit"
-import { postAdded, deletePost, postUpdate, fetchPosts, selectAllPosts } from "./postSlice"
+import { removePost, edittPost, fetchPosts, selectAllPosts, addPost} from "./postSlice"
 
 
 const Posts = () => {
@@ -16,27 +16,39 @@ const Posts = () => {
   useEffect(() => {
     if (postStatus === 'idle') {
       dispatch(fetchPosts())
-      console.log(posts)
     }
-  }, [postStatus, posts, dispatch])
+  }, [postStatus, dispatch])
 
-  const savePost = () => {
+  const savePost = async() => {
     if (title && content && btnName === 'Add Post') {
-      dispatch(
-        postAdded({ id: nanoid(), title, content })
-      )
-
-      setTitle('')
-      setContent('')
+      try {
+        dispatch(
+          addPost({ id: nanoid(), title, content })
+        )
+        setTitle('')
+        setContent('')
+      }catch(err){
+        console.log('Failed To save post: ', err)
+      }finally{
+        console.log("success")
+      }
+      
     } else {
       dispatch(
-        postUpdate({ id, title, content })
+        edittPost({ id, title, content })
       )
 
       setTitle('')
       setContent('')
       setBtnName('Add Post')
     }
+  }
+
+  const deletePost = (userId) => {
+      dispatch(removePost(userId))
+      setTitle('')
+      setContent('')
+      setBtnName('Add Post')
   }
 
   const editPost = (post) => {
@@ -95,7 +107,6 @@ const Posts = () => {
       <div style={{ borderTop: '1px solid #eeeeee', padding: '20px auto', height: '330px', overflow: 'auto' }} className="display">
         {posts.map(post => (
           <div key={post.id}
-            onClick={() => editPost(post)}
             style={{
               width: '420px',
               margin: '10px auto',
@@ -109,12 +120,17 @@ const Posts = () => {
             }}>
 
             <span style={{ fontSize: '25px' }}>{post.title}
-              <span onClick={() => dispatch(deletePost(post.id))} style={{ fontSize: '20px', cursor: 'pointer', float: 'right', color: 'red' }}>
-                <b>X</b>
+              <span onClick={() => deletePost(post.id)} className="xBtn">
+                <b>DEL</b>
               </span>
             </span>
             <br />
-            <p style={{ fontSize: '15px', marginTop: '7px' }}>{post.content}</p>
+            <p style={{ fontSize: '15px', marginTop: '7px' }}>
+              {post.content}
+              <span onClick={() => editPost(post)} className="eBtn">
+                <b>EDIT</b>
+              </span>
+            </p>
 
           </div>
         ))}

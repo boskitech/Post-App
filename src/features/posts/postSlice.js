@@ -6,11 +6,22 @@ export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
     return response.data;
 })
 
-export const addPost = createAsyncThunk('posts/addNewPost', async initialPost => {
+export const addPost = createAsyncThunk('posts/addPost', async initialPost => {
     const response = await axios.post('http://localhost:5000/posts', initialPost)
     return response.data
 })
 
+export const removePost = createAsyncThunk('post/removePost', async postId => {
+    await axios.delete(`http://localhost:5000/posts/${postId}`)
+    return postId
+})
+
+export const edittPost = createAsyncThunk('post/editPost', async (payload) => {
+    const {id, title, content } = payload
+    
+    const response = await axios.put(`http://localhost:5000/posts/${id}`, payload)
+    return response.data
+})
 const initialState = {
     posts: [],
     status: 'idle',
@@ -50,6 +61,19 @@ const postsSlice = createSlice({
             })
             .addCase(addPost.fulfilled, (state, action) => {
                 state.posts.push(action.payload)
+            })
+            .addCase(removePost.fulfilled, (state, action) => {
+                state.posts = state.posts.filter(post => post.id !== action.payload)
+                console.log(action.payload)
+            })
+            .addCase(edittPost.fulfilled, (state, action) => {
+                const id = action.payload.id
+                const newTitle = action.payload.title
+                const newContent = action.payload.content
+
+                state.posts = state.posts.map((post => post.id === id ? {
+                    ...post, title: newTitle, content: newContent
+                } : post))
             })
     }
 })

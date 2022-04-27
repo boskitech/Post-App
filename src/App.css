@@ -1,0 +1,23 @@
+.xBtn{
+    font-size: 20px; 
+    cursor: pointer;
+    float: right;
+    color: rgb(131, 0, 0);
+    z-index: 999;
+}
+
+.xBtn:hover{
+    color: rgb(236, 62, 62);
+}
+
+.eBtn{
+    font-size: 20px; 
+    cursor: pointer;
+    float: right;
+    color: green;
+    z-index: 999;
+}
+
+.eBtn:hover{
+    color: rgb(89, 240, 140);
+}
