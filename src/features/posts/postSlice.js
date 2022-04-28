@@ -17,11 +17,12 @@ export const removePost = createAsyncThunk('post/removePost', async postId => {
 })
 
 export const edittPost = createAsyncThunk('post/editPost', async (payload) => {
-    const {id, title, content } = payload
+    const {id} = payload
     
     const response = await axios.put(`http://localhost:5000/posts/${id}`, payload)
     return response.data
 })
+
 const initialState = {
     posts: [],
     status: 'idle',

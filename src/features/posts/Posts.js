@@ -1,54 +1,76 @@
-import { useState, useEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { nanoid } from "@reduxjs/toolkit"
-import { removePost, edittPost, fetchPosts, selectAllPosts, addPost} from "./postSlice"
+import { 
+  useAddNewPostMutation, 
+  useGetPostsQuery, 
+  useUpdatePostMutation,
+  useDeletePostMutation
+} from '../api/apiSlice'
+import { useState } from "react"
 
+
+let PostExcerpt = ({ post, editPost, delPost }) => {
+  return (
+    <div
+      style={{
+        width: '420px',
+        margin: '10px auto',
+        height: 'auto',
+        border: '1px solid #hhhhhh',
+        borderRadius: '3px',
+        backgroundColor: '#aaaaaa',
+        padding: '10px',
+        color: '#333333',
+        cursor: 'pointer'
+      }}>
+
+      <span style={{ fontSize: '25px' }}>{post.title}
+        <span onClick={() => delPost(post.id)}  className="xBtn">
+          <b>DEL</b>
+        </span>
+      </span>
+      <br />
+      <p style={{ fontSize: '15px', marginTop: '7px' }}>
+        {post.content}
+        <span onClick={() => editPost(post)} className="eBtn">
+          <b>EDIT</b>
+        </span>
+      </p>
+
+    </div>
+  )
+}
 
 const Posts = () => {
-  const posts = useSelector(selectAllPosts)
-  const postStatus = useSelector(state => state.posts.status)
+  const {
+    data: posts,
+    isLoading,
+    isSuccess,
+    isError,
+  } = useGetPostsQuery()
+
+  const [addNewPost] = useAddNewPostMutation()
+  const [updatePost] = useUpdatePostMutation()
+  const [deletePost] = useDeletePostMutation()
+
+  const [btnName, setBtnName] = useState('Add Post')
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [btnName, setBtnName] = useState('Add Post')
   const [id, setId] = useState('')
-  const dispatch = useDispatch()
 
-  useEffect(() => {
-    if (postStatus === 'idle') {
-      dispatch(fetchPosts())
-    }
-  }, [postStatus, dispatch])
-
-  const savePost = async() => {
+  const savePost = async () => {
     if (title && content && btnName === 'Add Post') {
       try {
-        dispatch(
-          addPost({ id: nanoid(), title, content })
-        )
+        await addNewPost({title, content}).unwrap()
         setTitle('')
         setContent('')
       }catch(err){
-        console.log('Failed To save post: ', err)
-      }finally{
-        console.log("success")
+        console.log('Failed to save post: ', err)
       }
-      
-    } else {
-      dispatch(
-        edittPost({ id, title, content })
-      )
-
+    }else {
+      await updatePost({id, title, content}).unwrap()
       setTitle('')
       setContent('')
       setBtnName('Add Post')
     }
-  }
-
-  const deletePost = (userId) => {
-      dispatch(removePost(userId))
-      setTitle('')
-      setContent('')
-      setBtnName('Add Post')
   }
 
   const editPost = (post) => {
@@ -56,6 +78,20 @@ const Posts = () => {
     setTitle(post.title)
     setContent(post.content)
     setBtnName('Update Post')
+  }
+
+  const delPost = async (userId) => {
+    await deletePost(userId)
+  }
+
+  let body
+
+  if (isLoading) {
+    body = 'Loading Content'
+  } else if (isSuccess) {
+    body = posts.map(post => (<PostExcerpt editPost={editPost} delPost={delPost} key={post.id} post={post} />))
+  } else if (isError) {
+    body = 'Error Loading Posts'
   }
 
   return (
@@ -105,36 +141,7 @@ const Posts = () => {
         </div>
       </div>
       <div style={{ borderTop: '1px solid #eeeeee', padding: '20px auto', height: '330px', overflow: 'auto' }} className="display">
-        {posts.map(post => (
-          <div key={post.id}
-            style={{
-              width: '420px',
-              margin: '10px auto',
-              height: 'auto',
-              border: '1px solid #hhhhhh',
-              borderRadius: '3px',
-              backgroundColor: '#aaaaaa',
-              padding: '10px',
-              color: '#333333',
-              cursor: 'pointer'
-            }}>
-
-            <span style={{ fontSize: '25px' }}>{post.title}
-              <span onClick={() => deletePost(post.id)} className="xBtn">
-                <b>DEL</b>
-              </span>
-            </span>
-            <br />
-            <p style={{ fontSize: '15px', marginTop: '7px' }}>
-              {post.content}
-              <span onClick={() => editPost(post)} className="eBtn">
-                <b>EDIT</b>
-              </span>
-            </p>
-
-          </div>
-        ))}
-
+        {body}
       </div>
 
     </div>
